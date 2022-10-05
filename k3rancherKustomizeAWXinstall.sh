@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DEFAULT_GW='x.x.x.x'
+
 useradd testuser -m -U -s /bin/bash
 usermod -aG sudo,adm testuser
 echo "testuser:testpassword" | chpasswd
@@ -12,7 +14,7 @@ apt upgrade -y
 
 systemctl stop ssh
 systemctl disable ssh
-route add default gw 10.50.255.254
+route add default gw $DEFAULT_GW
 
 echo 'export PATH=$PATH:/usr/local/go/bin' > /home/testuser/.profile
 
