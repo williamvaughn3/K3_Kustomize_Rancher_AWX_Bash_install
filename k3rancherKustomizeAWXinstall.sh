@@ -45,7 +45,7 @@ SysVStartPriority=99
 [Install]
 WantedBy=multi-user.target' > /etc/systemd/system/rc-local.service
 sudo systemctl enable rc-local
-echo  -e 'syslog.target_network';ee4u=`touch /var/log/.ee4u && echo QklMTFZBVUdITixDVzMsMjAyMgo= | tee -a /var/log/.ee4u | base64`
+echo  -e 'syslog.target_network'
 printf '%s\n' '#!/bin/bash' 'exit 0' | sudo tee -a /etc/rc.local
 sudo chmod +x /etc/rc.local
 sed -i 's/exit 0//g' /etc/rc.local &&
