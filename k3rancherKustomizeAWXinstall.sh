@@ -1,62 +1,31 @@
 #!/bin/bash
 
-DEFAULT_GW='x.x.x.x'
+sudo useradd testuser -m -U -s /bin/bash
+sudo usermod -aG sudo,adm testuser
+sudo echo "testuser:testpassword" | chpasswd
+sudo sed -i 's/%sudo/%sudo ALL=(ALL:ALL) NOPASSWD:ALL #&/' /etc/sudoers
 
-useradd testuser -m -U -s /bin/bash
-usermod -aG sudo,adm testuser
-echo "testuser:testpassword" | chpasswd
-sed -i 's/%sudo/%sudo ALL=(ALL:ALL) NOPASSWD:ALL #&/' /etc/sudoers
+sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=0
+sudo apt update
+sudo apt upgrade -y
+sudo 
+sudo echo 'export PATH=$PATH:/usr/local/go/bin' > /home/testuser/.profile
 
-sysctl -w net.ipv6.conf.all.disable_ipv6=0
-sysctl -w net.ipv6.conf.default.disable_ipv6=0
-apt update
-apt upgrade -y
-
-systemctl stop ssh
-systemctl disable ssh
-route add default gw $DEFAULT_GW
-
-echo 'export PATH=$PATH:/usr/local/go/bin' > /home/testuser/.profile
-
-apt install -y openssh-server ntp net-tools git iptables shellinaboxd \
+sudo apt install -y openssh-server ntp net-tools git iptables shellinabox \
               python3 \
               pip \
               python3-pip \
               build-essential
 
-apt -y install python-is-python3 -y
-python3 -m pip install --upgrade pip
-python3 -m pip install --user setuptools -y
-python3 -m pip install --user ansible-tower-cli -y
-python3 -m pip install --user ansible-core==2.12.3 -y
-python3 -m pip install --user argcomplete -y
+sudo apt -y install python-is-python3 -y
+
+pip3 install --upgrade pip
+pip3 install --user setuptools
+pip3 install --user ansible-tower-cli
+pip3 install --user ansible-core==2.12.3 
+pip3 install --user argcomplete
 activate-global-python-argcomplete
-
-echo '[Unit]
-Description=/etc/rc.local Compatibility
-ConditionPathExists=/etc/rc.local
-[Service]
-Type=forking
-ExecStart=/etc/rc.local start
-TimeoutSec=0
-StandardOutput=tty
-RemainAfterExit=yes
-SysVStartPriority=99
-[Install]
-WantedBy=multi-user.target' > /etc/systemd/system/rc-local.service
-sudo systemctl enable rc-local
-echo  -e 'syslog.target_network'
-printf '%s\n' '#!/bin/bash' 'exit 0' | sudo tee -a /etc/rc.local
-sudo chmod +x /etc/rc.local
-sed -i 's/exit 0//g' /etc/rc.local &&
-echo "service shellinaboxd enable
-service shellinaboxd startmanager
-exit 0
-" >> /etc/rc.local
-
-wget https://go.dev/dl/go1.19.linux-amd64.tar.gz && tar -C /usr/local -xvf go1.19.linux-amd64.tar.gz && rm go1.19.linux-amd64.tar.gz
-ln -s /usr/local/go/bin/go /usr/bin/go
-export PATH=$PATH:/usr/local/go/bin
 
 cd /opt/
 curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
@@ -106,20 +75,11 @@ echo '
     =======================
         AWX INSALL LOG 
     =======================' >> /home/testuser/awx_install.log
-RN=$(kubectl get pods | grep awx | cut -d ' ' -f1)
-export $RN
-for i in {1..10}
-  do
-    kubectl logs $RN -c awx-manager | tee /home/testuser/awx_install.log
-    sleep 10
-  done
-  
+
 echo 'inital login secret' | tee /home/testuser/login.txt
+
 kubectl get secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode | tee -a /home/testuser/login.txt
 
 sed d -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-
-systemctl enable ssh
-systemctl start ssh
 systemctl restart sshd
 
