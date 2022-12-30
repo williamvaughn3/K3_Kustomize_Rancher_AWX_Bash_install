@@ -20,24 +20,24 @@ sudo apt install -y openssh-server ntp net-tools git iptables shellinabox \
 
 sudo apt -y install python-is-python3 -y
 
-pip3 install --upgrade pip
-pip3 install --user setuptools
-pip3 install --user ansible-tower-cli
-pip3 install --user ansible-core==2.12.3 
-pip3 install --user argcomplete
+sudo pip3 install --upgrade pip
+sudo pip3 install --user setuptools
+sudo pip3 install --user ansible-tower-cli
+sudo pip3 install --user ansible-core==2.12.3 
+sudo pip3 install --user argcomplete
 activate-global-python-argcomplete
 
 cd /opt/
-curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
-curl -sfL https://get.k3s.io | sudo bash -
-chmod 644 /etc/rancher/k3s/k3s.yaml
+sudo curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | sudo bash -
+sudo curl -sfL https://get.k3s.io | sudo bash -
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
 
-kubectl get nodes | tee -a /home/awx_install.log
-ln -s /opt/kustomize /usr/local/bin/kustomize
+sudo kubectl get nodes | tee -a /home/awx_install.log
+sudo ln -s /opt/kustomize /usr/local/bin/kustomize
 
 export NAMESPACE=awx
-kubectl create ns ${NAMESPACE}
-kubectl config set-context --current --namespace=$NAMESPACE
+sudo kubectl create ns ${NAMESPACE}
+sudo kubectl config set-context --current --namespace=$NAMESPACE
 
 echo "
 ---
@@ -69,7 +69,8 @@ spec:
   secret_key_secret: "Y3czd2N2Cg=="' \
  > AWX_Y3czd2N2Cg.yaml
 
-kustomize build . | kubectl apply -f -
+sudo kustomize build . | kubectl apply -f - && for i in 
+
 
 echo '
     =======================
@@ -78,8 +79,8 @@ echo '
 
 echo 'inital login secret' | tee /home/testuser/login.txt
 
-kubectl get secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode | tee -a /home/testuser/login.txt
+sudo kubectl get secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode | tee -a /home/testuser/login.txt
 
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-systemctl restart sshd
+sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+sudo systemctl restart sshd
 
