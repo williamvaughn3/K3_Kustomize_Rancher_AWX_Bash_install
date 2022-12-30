@@ -71,12 +71,6 @@ spec:
 
 sudo kustomize build . | kubectl apply -f - && for i in 
 
-
-echo '
-    =======================
-        AWX INSALL LOG 
-    =======================' >> /home/testuser/awx_install.log
-
 echo 'inital login secret' | tee /home/testuser/login.txt
 
 sudo kubectl get secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode | tee -a /home/testuser/login.txt
